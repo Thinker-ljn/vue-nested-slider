@@ -13,6 +13,75 @@ const sliders = {
   }
 }
 
+function setChildIndex (route, minDeep) {
+  const parent = route.matched[minDeep - 1]
+  const child = route.matched[minDeep]
+  const parentConfig = sliders.routeMap[parent.name]
+  if (child && parentConfig) {
+    const index = parentConfig.route.children.findIndex(r => r.name === child.name)
+    if (index) {
+      parentConfig.currChildIndex = index
+    }
+  }
+}
+function findDeepest (routeConfig) {
+  let targetRoute = null
+  while (true) {
+    const parentRoute = routeConfig.route
+    if (routeConfig.currChildIndex > -1 && parentRoute.children  && parentRoute.children.length) {
+      const route = parentRoute.children[routeConfig.currChildIndex]
+      if (route) {
+        targetRoute = route
+        routeConfig = sliders.routeMap[route.name]
+      } else {
+        break
+      }
+    } else {
+      break
+    }
+  }
+  return targetRoute
+}
+
+function getdeepestRoute (route, minDeep) {
+  const parent = route.matched[minDeep - 1]
+  const routeConfig = sliders.routeMap[parent.name]
+  const deepestComp = findDeepest(routeConfig)
+  if (deepestComp) {
+    route = deepestComp
+  }
+  return route
+}
+function beforeEach (to, from, next) {
+  if (from && from.name) {
+    const minDeep = sliders.getMinDeep(to, from)
+    setChildIndex(from, minDeep)
+    const deepest = getdeepestRoute(to, minDeep)
+    if (deepest && deepest.name === to.name) {
+      next()
+    } else {
+      next(deepest)
+    }
+  } else {
+    next() 
+  }
+}
+function catchError (Router) {
+  if (!Router) {
+    return
+  }
+  const routerPush = Router.prototype.push
+  Router.prototype.push = function push(location) {
+    return routerPush.call(this, location).catch(error=> error)
+  }
+}
+export function setupRoute (router, deep) {
+  catchError(router.constructor)
+  const routes = router.options.routes
+  genSliderConfig(routes, deep)
+  router.beforeEach(beforeEach)
+}
+
 export function genSliderConfig (routes, deep) {
   deep = deep < 1 ? 1 : deep
   sliders.routeList = []
@@ -31,6 +100,7 @@ export function genSliderConfig (routes, deep) {
         parent,
         prev,
         next,
+        currChildIndex: -1,
         isFirst: parent ? parent.firstChild.component === route: void 0,
         isLast: parent ? parent.lastChild.component === route: void 0,
         pos: parent ? parent.pos + '-' + i : i + '',
@@ -49,7 +119,7 @@ export function genSliderConfig (routes, deep) {
 
 function getMinDeep (to, from) {
   const toConfig = sliders.routeMap[to.name]
-  const fromConfig = sliders.routeMap[from.name]
+  const fromConfig = sliders.routeMap[from.name] || Infinity
 
   const minDp = Math.min(toConfig.deep, fromConfig.deep)
   return minDp
@@ -57,7 +127,6 @@ function getMinDeep (to, from) {
 
 export function elTranslate(el, movement, options) {
   const {x = 0, y = 0} = movement
-  // console.log(el)
   if (!el) return
   const defaultOptions = {
     useTransfrom: true,

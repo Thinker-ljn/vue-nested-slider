@@ -55,6 +55,10 @@ export default {
     viewComponent () {
       const routeInfo = this.sliders.routeMap[this.viewRouteName]
       if (!routeInfo) {return null}
+      const {currChildIndex, route} = routeInfo
+      if (currChildIndex > -1 && route.children && route.children.length) {
+        return route.children[currChildIndex]
+      }
       return this.viewPosition === 'left' ? routeInfo.lastChild : routeInfo.firstChild
     }
   },
@@ -103,12 +107,6 @@ export default {
     },
     updateRouter(el, component, toLeft) {
       if (this.isDragedSlide) {
-        const routeConfig = this.sliders.routeMap[component.name]
-        if (toLeft) {
-          component = routeConfig.firstChild || component
-        } else {
-          component = routeConfig.lastChild || component
-        }
         const { name, path } = component
 
         if (name === this.$route.name) {
