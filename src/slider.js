@@ -1,4 +1,6 @@
 import Vue from 'vue'
+import SliderView from '@/slider-view.vue'
+
 const eventBus = new Vue()
 const sliders = {
   getMinDeep,
@@ -75,11 +77,24 @@ function catchError (Router) {
     return routerPush.call(this, location).catch(error=> error)
   }
 }
+
+
+function install (Vue) {
+  if (install.installed) return
+  install.installed = true
+
+  Vue.component('slider-view', SliderView)
+}
+
 export function setupRoute (router, deep) {
   catchError(router.constructor)
   const routes = router.options.routes
   genSliderConfig(routes, deep)
   router.beforeEach(beforeEach)
+
+  return {
+    install
+  }
 }
 
 export function genSliderConfig (routes, deep) {

@@ -1,11 +1,11 @@
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
-import SliderView from '@/index.vue'
+import { setupRoute } from '@/slider.js'
 
 Vue.config.productionTip = false
 
-Vue.component('slider-view', SliderView)
+Vue.use(setupRoute(router, 2))
 
 new Vue({
   router,

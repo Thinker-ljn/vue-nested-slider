@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import { setupRoute } from '@/config.js'
 
 import Home from './views/home/main.vue'
 import About from './views/about.vue'
@@ -41,8 +40,6 @@ const routes = [
 const router = new VueRouter({
   routes
 })
-
-setupRoute(router, 2)
 
 export {
   homeParts,

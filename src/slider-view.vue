@@ -24,7 +24,7 @@
 
 <script>
 import PositionProvider from './position-provider.vue'
-import sliders, { elTranslate } from './config'
+import sliders, { elTranslate } from './slider'
 export default {
   components: {
     PositionProvider,
