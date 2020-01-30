@@ -53,6 +53,7 @@ export default {
       return this.positionProvider.routeName
     },
     viewComponent () {
+      // 当前页不在主页面时（在左或右）保持其状态以及子组件状态
       const routeInfo = this.sliders.routeMap[this.viewRouteName]
       if (!routeInfo) {return null}
       const {currChildIndex, route} = routeInfo
@@ -118,6 +119,7 @@ export default {
       }
     },
     onTouchStart (ev) {
+      // 不是第一或最后一页面，可滑动，不冒泡。
       if (!this.isFirst && !this.isLast) {
         ev.stopPropagation()
       }
@@ -136,15 +138,18 @@ export default {
         }
         movement = mt.pageX - t.pageX
         if (movement === 0) {
+          // 不是水平方向，停止滑动
           stopSlide = true
           return
         }
         toLeft = movement < 0
         const toRight = !toLeft
         if (this.isFirst && toRight || this.isLast && toLeft) {
+          // 禁止第一页向右滑或最后一页向左滑
           stopSlide = true
           return
         } else {
+          // 其他情况允许滑动，不冒泡
           ev.stopPropagation()
         }
         toCenterEl = this.$refs[toLeft ? 'nextPage' : 'prevPage']
